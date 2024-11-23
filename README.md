@@ -4,7 +4,7 @@ This is a simple, responsive To-Do List application built using the MERN stack (
 
 Features:
 - Add Tasks: Create new to-do items with ease.
-- Edit Tasks: Modify the tasks.
+- Edit Tasks: Modify the existing tasks.
 - Delete Tasks: Remove tasks when completed or no longer needed.
 - Mark as Complete: Easily mark tasks as completed by checking them off, with a visual indicator for completed and pending tasks.
 - Responsive Design: Fully responsive and mobile-friendly user interface.
