@@ -29,18 +29,18 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
+    <div className="min-h-screen bg-gray-100 text-gray-900 p-6">
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
 
       {/* Main Section */}
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-gray-900">
-        <div className="text-center p-10 bg-gray-800 bg-opacity-60 rounded-lg shadow-xl w-full max-w-md">
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-gray-100">
+        <div className="relative text-center p-10 bg-white rounded-lg shadow-lg w-full max-w-md">
           {/* Back Icon */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center ">
             <div>
               {/* Login Title with Gradient */}
-              <h1 className="text-4xl font-bold text-left">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
+              <h1 className="text-lg font-bold text-left">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                   Task
                 </span>
                 Mate
@@ -57,12 +57,15 @@ const SignUp = () => {
               </Link>
             </div>
           </div>
+          <h1 className="text-4xl text-gray-600 font-semibold text-center mt-2 mb-6">
+            Sign Up
+          </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
                 htmlFor="username"
-                className="block text-left text-sm font-medium text-gray-300"
+                className="block text-left text-sm font-medium text-gray-700"
               >
                 Username
               </label>
@@ -73,14 +76,14 @@ const SignUp = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="bg-gray-700 mt-2 w-full px-4 py-3 border outline-none  border-gray-500 rounded-[4px] transition-all duration-200"
+                className="bg-gray-100 mt-2 w-full px-4 py-3 border border-gray-300 rounded-[4px] outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200"
               />
             </div>
 
             <div>
               <label
                 htmlFor="email"
-                className="block text-left text-sm font-medium text-gray-300"
+                className="block text-left text-sm font-medium text-gray-700"
               >
                 Email
               </label>
@@ -91,14 +94,14 @@ const SignUp = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-gray-700 mt-2 w-full px-4 py-3 border outline-none  border-gray-500 rounded-[4px] transition-all duration-200"
+                className="bg-gray-100 mt-2 w-full px-4 py-3 border border-gray-300 rounded-[4px] outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200"
               />
             </div>
 
             <div>
               <label
                 htmlFor="password"
-                className="block text-left text-sm font-medium text-gray-300"
+                className="block text-left text-sm font-medium text-gray-700"
               >
                 Password
               </label>
@@ -109,14 +112,14 @@ const SignUp = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-gray-700 mt-2 w-full px-4 py-3 border outline-none  border-gray-500 rounded-[4px] transition-all duration-200"
+                className="bg-gray-100 mt-2 w-full px-4 py-3 border border-gray-300 rounded-[4px] outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200"
               />
             </div>
 
             <div>
               <button
                 type="submit"
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-[4px] hover:bg-blue-700 outline-none transition-all duration-300"
+                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-[4px] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
               >
                 Sign Up
               </button>
@@ -124,10 +127,10 @@ const SignUp = () => {
           </form>
 
           <div className="mt-4 text-center">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link to='/login' className="text-blue-500 hover:text-blue-700">
-              Login
+              <Link to="/login" className="text-blue-500 hover:text-blue-700">
+                Login
               </Link>
             </p>
           </div>
