@@ -10,7 +10,7 @@ This is a simple, responsive To-Do List application built using the MERN stack (
 - Mark as Complete: Easily mark tasks as completed by checking them off, with a visual indicator for completed and pending tasks.
 - Responsive Design: Fully responsive and mobile-friendly user interface.
 
-<h3>Technologies Used</h3>
+<h3>Tech Stack</h3>
 
 - Frontend: React.js, Tailwind CSS
 - Backend: Node.js, Express.js
