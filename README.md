@@ -1,4 +1,4 @@
-# To-Do List Web Application using MERN Stack ✅
+# TaskMate - To-Do List Web Application using MERN Stack ✅
 
 This is a simple, responsive To-Do List application built using the MERN stack (MongoDB, Express, React, Node.js).
 
