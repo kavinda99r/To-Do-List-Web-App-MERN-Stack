@@ -2,7 +2,7 @@
 
 This is a simple, responsive To-Do List application built using the MERN stack (MongoDB, Express, React, Node.js).
 
-<h3>Key Features</h3>
+<h3>Key Features ✨</h3>
 
 - Add Tasks: Create new to-do items with ease.
 - Edit Tasks: Modify the existing tasks.
@@ -10,7 +10,7 @@ This is a simple, responsive To-Do List application built using the MERN stack (
 - Mark as Complete: Easily mark tasks as completed by checking them off, with a visual indicator for completed and pending tasks.
 - Responsive Design: Fully responsive and mobile-friendly user interface.
 
-<h3>Tech Stack</h3>
+<h3>Tech Stack 🛠️</h3>
 
 - Frontend: React.js, Tailwind CSS
 - Backend: Node.js, Express.js
@@ -18,7 +18,7 @@ This is a simple, responsive To-Do List application built using the MERN stack (
 
 <br>
 
-<h2>Installation Guide</h2>
+<h2>Installation Guide 💻</h2>
 1. Extract the project folder. <br>
 2. Open the folder in VS Code. 
 
@@ -60,7 +60,8 @@ cd ../frontend
 npm run dev
 ```
 
-<br>
+<h2> </h2>
 
-> [!NOTE]
-> Once both the frontend and backend servers are running, the web application will be fully operational.
+<h3>Happy Coding! 🎉</h3>
+
+---
