@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local secrets and Vercel project metadata
+.env
+.env.*
+!.env.example
+.vercel/

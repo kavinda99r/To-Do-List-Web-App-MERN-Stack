@@ -1,7 +1,9 @@
 import axios from "axios";
 import { getToken, setToken } from "./session";
 
-const api = axios.create({ baseURL: "/api" });
+// Local requests use the Vite proxy. Vercel uses the deployed backend URL.
+const apiUrl = import.meta.env.VITE_API_URL || "/api";
+const api = axios.create({ baseURL: apiUrl.replace(/\/+$/, "") });
 
 // Attach the saved login token to every API request.
 api.interceptors.request.use((request) => {
