@@ -108,9 +108,7 @@ export default function Profile() {
           <i className="bi bi-grid" aria-hidden="true" /> Back to tasks
         </Link>
         <div className="mb-4 md:mb-7">
-          <p className="eyebrow mb-2">Your personal space</p>
           <h1 className="mb-2">Account settings</h1>
-          <p className="muted">A few essentials to keep your account yours.</p>
         </div>
         {loadError && (
           <p role="alert" className="form-error">
@@ -125,7 +123,7 @@ export default function Profile() {
                 <i className="bi bi-person" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="mb-2">{account.username}</h2>
+                <h2 className="">{account.username}</h2>
                 <p className="muted">{account.email}</p>
               </div>
               <button
