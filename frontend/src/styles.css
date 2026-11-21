@@ -1,0 +1,52 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Common design values used by every page. */
+  :root {
+    --color-primary: #4269de;
+    --color-text: #1e293b;
+    --color-muted: #64748b;
+    --color-border: #e2e8f0;
+    --color-surface: #ffffff;
+    --heading-size: 2rem;
+    --subheading-size: 1.25rem;
+    --body-size: 1rem;
+    --control-size: .875rem;
+    --control-radius: 4px;
+    --control-x: .75rem;
+    --control-y: .375rem;
+  }
+  body { @apply font-sans text-body text-content; }
+  h1, h2, h3 { @apply font-display tracking-tight; }
+  h1 { @apply text-heading font-extrabold; }
+  h2 { @apply text-subheading font-bold; }
+  button, input { @apply font-sans; }
+  button:disabled { @apply cursor-wait opacity-60; }
+  button, a { @apply transition-colors; }
+  :focus-visible { @apply outline outline-2 outline-offset-4 outline-blue-500; }
+}
+
+@layer components {
+  /* Common typography. Layout and responsive utilities stay in the JSX files. */
+  .muted { @apply text-control leading-7 text-muted; }
+  .eyebrow { @apply mb-4 text-xs font-bold uppercase tracking-widest text-primary; }
+  .field-hint { @apply text-xs text-muted; }
+  .notice, .form-error { @apply mt-4 rounded-md px-3 py-3 text-control; }
+  .notice { @apply bg-green-50 text-green-800; }
+  .form-error { @apply bg-rose-50 text-rose-700; }
+
+  /* Reusable controls. Each page adds its own spacing and alignment. */
+  .button, .primary-button, .secondary-button, .danger-button {
+    @apply rounded-control px-control-x py-control-y text-control font-semibold leading-5;
+  }
+  .primary-button { @apply bg-primary text-white shadow-sm hover:bg-blue-700; }
+  .secondary-button { @apply border border-line bg-surface text-muted hover:bg-blue-50; }
+  .danger-button { @apply border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100; }
+  .input-field {
+    @apply w-full min-w-0 rounded-control border border-line bg-slate-50 px-control-x py-control-y text-control font-normal leading-5 text-content outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100;
+  }
+}

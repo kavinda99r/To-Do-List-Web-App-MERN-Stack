@@ -1,21 +1,8 @@
 const express = require("express");
 const Todo = require("../models/Todo");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const authenticate = require("../authenticate");
 
 const router = express.Router();
-
-// Middleware to verify JWT
-const authenticate = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Bearer token
-  if (!token) return res.status(403).json({ message: "No token provided" });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
-    req.user = user;
-    next();
-  });
-};
 
 // Create a Todo
 router.post("/todos", authenticate, async (req, res) => {

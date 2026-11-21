@@ -1,284 +1,383 @@
-import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
-import { FaCheckCircle, FaTrash, FaEdit, FaRegCircle } from "react-icons/fa";
-import { IoAdd } from "react-icons/io5";
-import { FiLogOut } from "react-icons/fi";
+import LoadingStatus from "../components/LoadingStatus";
+import { useState, useEffect, useRef, useCallback } from "react";
+import api from "../api";
+import Header from "../components/Header";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const TodoList = () => {
+export default function TodoList() {
   const [todos, setTodos] = useState([]);
   const [task, setTask] = useState("");
+  const [editText, setEditText] = useState("");
   const [editingTask, setEditingTask] = useState(null);
-  const listRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [pending, setPending] = useState({});
+  // Store request IDs without causing a second render.
+  const locks = useRef(new Set());
+  const inputRef = useRef(null);
 
-  // Fetch todos from the backend
-  useEffect(() => {
-    const fetchTodos = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const response = await axios.get("http://localhost:5001/api/todos", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTodos(response.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchTodos();
+  const fetchTodos = useCallback(async (signal) => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const { data } = await api.get("/todos", { signal });
+      setTodos(data);
+    } catch (error) {
+      if (error.code !== "ERR_CANCELED") setLoadError(true);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
   }, []);
 
-  // Add a new task
-  const handleAddTodo = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-    try {
-      const response = await axios.post(
-        "http://localhost:5001/api/todos",
-        { task },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setTodos([...todos, response.data]);
-      setTask("");
-      toast.success("Task added successfully!", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error("Error adding task", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-    }
-  };
-
-  // Mark task as completed
-  const handleToggleComplete = async (id, currentStatus) => {
-    const token = localStorage.getItem("token");
-    try {
-      const response = await axios.put(
-        `http://localhost:5001/api/todos/${id}`,
-        { completed: !currentStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTodos(todos.map((todo) => (todo._id === id ? response.data : todo)));
-      toast.success(
-        currentStatus ? "Task marked as incomplete" : "Task completed!",
-        {
-          style: { backgroundColor: "white", color: "gray" },
-        }
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error("Error updating task", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-    }
-  };
-
-  // Delete task
-  const handleDeleteTodo = async (id) => {
-    const token = localStorage.getItem("token");
-    try {
-      await axios.delete(`http://localhost:5001/api/todos/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTodos(todos.filter((todo) => todo._id !== id));
-      toast.error("Task deleted successfully!", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-    } catch (err) {
-      console.error(
-        "Error deleting task:",
-        err.response?.data?.message || err.message
-      );
-      toast.error("Error deleting task", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-    }
-  };
-
-  // Edit task
-  const handleEditTodo = async (id, newTask) => {
-    if (!newTask.trim()) {
-      toast.error("Task cannot be empty!", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-      return;
-    }
-    const token = localStorage.getItem("token");
-    try {
-      const response = await axios.put(
-        `http://localhost:5001/api/todos/${id}`,
-        { task: newTask },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTodos(todos.map((todo) => (todo._id === id ? response.data : todo)));
-      setEditingTask(null); // Exit editing mode
-      setTask(""); // Clear the input field
-      toast.info("Task updated successfully!", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error("Error updating task", {
-        style: { backgroundColor: "white", color: "gray" },
-      });
-    }
-  };
-
-  // Cancel editing task and clear input field
-  const handleCancelEdit = () => {
-    setEditingTask(null); // Exit editing mode
-    setTask(""); // Clear the task input field
-  };
-
-  // Scroll to bottom when new task is added or when there are more than 5 tasks
   useEffect(() => {
-    if (todos.length > 5) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
+    const controller = new AbortController();
+    fetchTodos(controller.signal);
+    return () => controller.abort();
+  }, [fetchTodos]);
+
+  async function handleAddTodo(event) {
+    event.preventDefault();
+    if (!task.trim() || locks.current.has("add")) return;
+    locks.current.add("add");
+    setAdding(true);
+    try {
+      const { data } = await api.post("/todos", { task: task.trim() });
+      setTodos((current) => [...current, data]);
+      setTask("");
+      toast.success("Task added");
+      inputRef.current?.focus();
+    } catch {
+      toast.error("Unable to add task. Please try again.");
+    } finally {
+      locks.current.delete("add");
+      setAdding(false);
     }
-  }, [todos]);
+  }
+
+  // A ref blocks a duplicate click immediately, before React redraws the button.
+  function startTaskRequest(id) {
+    if (locks.current.has(id)) {
+      return false;
+    }
+    locks.current.add(id);
+    setPending((current) => ({ ...current, [id]: true }));
+    return true;
+  }
+
+  function finishTaskRequest(id) {
+    locks.current.delete(id);
+    setPending((current) => {
+      const updated = { ...current };
+      delete updated[id];
+      return updated;
+    });
+  }
+
+  async function handleToggleComplete(todo) {
+    if (!startTaskRequest(todo._id)) return;
+    try {
+      const response = await api.put("/todos/" + todo._id, {
+        completed: !todo.completed,
+      });
+      setTodos((current) =>
+        current.map((item) => {
+          if (item._id === todo._id) return response.data;
+          return item;
+        }),
+      );
+    } catch {
+      toast.error("Unable to update task. Please try again.");
+    } finally {
+      finishTaskRequest(todo._id);
+    }
+  }
+
+  async function handleSaveTask(event, todo) {
+    event.preventDefault();
+    if (!editText.trim() || !startTaskRequest(todo._id)) return;
+    try {
+      const response = await api.put("/todos/" + todo._id, {
+        task: editText.trim(),
+      });
+      setTodos((current) =>
+        current.map((item) => {
+          if (item._id === todo._id) return response.data;
+          return item;
+        }),
+      );
+      cancelEdit();
+      toast.success("Task updated");
+    } catch {
+      toast.error("Unable to update task. Please try again.");
+    } finally {
+      finishTaskRequest(todo._id);
+    }
+  }
+
+  async function handleDeleteTodo(todo) {
+    if (!startTaskRequest(todo._id)) return;
+    try {
+      await api.delete("/todos/" + todo._id);
+      setTodos((current) => current.filter((item) => item._id !== todo._id));
+      if (editingTask === todo._id) cancelEdit();
+      toast.success("Task deleted");
+    } catch {
+      toast.error("Unable to delete task. Please try again.");
+    } finally {
+      finishTaskRequest(todo._id);
+    }
+  }
+
+  function cancelEdit() {
+    setEditingTask(null);
+    setEditText("");
+  }
+  const completed = todos.filter((todo) => todo.completed).length;
+
+  // Use separate conditions instead of a long chain of nested ternaries.
+  function renderTaskList() {
+    if (loading) {
+      return (
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 text-muted">
+          <LoadingStatus />
+        </div>
+      );
+    }
+    if (loadError) {
+      return (
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 text-muted">
+          <p className="text-control" role="alert">
+            Unable to load your tasks.
+          </p>
+          <button
+            className="secondary-button mt-4"
+            onClick={() => fetchTodos()}
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+    if (todos.length === 0) {
+      return (
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 text-muted">
+          <i
+            className="bi bi-clipboard-check mb-3 inline-block text-3xl text-blue-300"
+            aria-hidden="true"
+          />
+          <h3 className="mb-1 font-semibold">A fresh start.</h3>
+          <p className="text-control">
+            Add your first task above. One small step is enough.
+          </p>
+        </div>
+      );
+    }
+    return (
+      <ul
+        className="m-0 min-h-0 flex-1 list-none overflow-y-auto overscroll-contain px-3 pb-3 focus-visible:outline-offset-[-3px]"
+        tabIndex={0}
+        aria-label="Your tasks"
+      >
+        {todos.map((todo) => (
+          <li
+            key={todo._id}
+            className={
+              "flex flex-wrap items-center gap-1.5 rounded-md border-b border-line px-2 py-4 sm:flex-nowrap sm:gap-3 sm:px-3 last:border-transparent hover:bg-blue-50/40" +
+              (editingTask === todo._id ? " bg-blue-50/40 items-start" : "") +
+              (todo.completed ? " bg-slate-50/50" : "")
+            }
+            aria-busy={Boolean(pending[todo._id])}
+          >
+            <button
+              type="button"
+              className={
+                "grid h-8 w-8 shrink-0 place-items-center rounded-control hover:bg-blue-50 hover:text-primary text-xl" +
+                (todo.completed ? " text-emerald-600" : " text-muted")
+              }
+              disabled={pending[todo._id] || editingTask === todo._id}
+              aria-label={
+                todo.completed ? "Mark task incomplete" : "Mark task complete"
+              }
+              aria-pressed={todo.completed}
+              onClick={() => handleToggleComplete(todo)}
+            >
+              <i
+                className={`bi bi-${todo.completed ? "check2-circle" : "circle"}`}
+                aria-hidden="true"
+              />
+            </button>
+            {editingTask === todo._id ? (
+              <form
+                className="min-w-0 flex-1"
+                onSubmit={(event) => handleSaveTask(event, todo)}
+              >
+                <label className="sr-only" htmlFor={`edit-${todo._id}`}>
+                  Edit task
+                </label>
+                <input
+                  className="input-field bg-surface"
+                  autoFocus
+                  id={`edit-${todo._id}`}
+                  value={editText}
+                  onChange={(event) => setEditText(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape" && !pending[todo._id])
+                      cancelEdit();
+                  }}
+                  maxLength={500}
+                  required
+                  disabled={pending[todo._id]}
+                />
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <button
+                    className="button bg-blue-50 text-primary"
+                    disabled={pending[todo._id] || !editText.trim()}
+                  >
+                    {pending[todo._id] ? <LoadingStatus /> : "Save changes"}
+                  </button>
+                  <button
+                    type="button"
+                    className="button bg-slate-100 text-muted"
+                    onClick={cancelEdit}
+                    disabled={pending[todo._id]}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <span
+                className={
+                  "min-w-0 flex-1 break-words text-body text-content" +
+                  (todo.completed ? " text-muted line-through" : "")
+                }
+              >
+                {todo.task}
+              </span>
+            )}
+            {pending[todo._id] && editingTask !== todo._id && (
+              <span className="text-xs text-muted w-full shrink-0 pl-9 sm:w-auto sm:pl-0">
+                <LoadingStatus />
+              </span>
+            )}
+            <div className="flex shrink-0 items-center gap-1">
+              {editingTask !== todo._id && (
+                <button
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-control text-muted hover:bg-blue-50 hover:text-primary text-control"
+                  type="button"
+                  aria-label={`Edit task: ${todo.task}`}
+                  title="Edit task"
+                  disabled={pending[todo._id] || Boolean(editingTask)}
+                  onClick={() => {
+                    setEditingTask(todo._id);
+                    setEditText(todo.task);
+                  }}
+                >
+                  <i className="bi bi-pencil" aria-hidden="true" />
+                </button>
+              )}
+              <button
+                type="button"
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-control text-muted text-control hover:bg-rose-50 hover:text-rose-600"
+                aria-label={`Delete task: ${todo.task}`}
+                title="Delete task"
+                disabled={pending[todo._id]}
+                onClick={() => handleDeleteTodo(todo)}
+              >
+                <i className="bi bi-trash3" aria-hidden="true" />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
   return (
-    <div className="flex justify-center py-10 h-screen bg-gray-100 px-5">
-      <div className="container mx-auto p-8 max-w-3xl shadow-lg rounded-[4px] bg-white">
-        <div className="flex justify-between items-center mb-10">
-          <div>
-            {/* Login Title with Gradient */}
-            <h1 className="text-4xl font-bold text-left">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                Task
-              </span>
-              Mate
-            </h1>
-          </div>
-          <div>
-            <Link to="/">
-              <button
-                className="flex items-center gap-2 p-2 rounded-[5px] border-[1px] border-gray-400 transition-all hover:bg-gray-100"
-                aria-label="Go Back"
-              >
-                <FiLogOut className="h-4 w-4 text-gray-600" />
-                <span className="text-gray-600">Logout</span>
-              </button>
-            </Link>
-          </div>
+    <div className="bg-slate-50 flex h-dvh min-h-0 flex-col overflow-hidden">
+      <Header />
+      <main className="mx-auto w-full min-h-0 flex-1 px-5 pt-3 md:px-6 md:pt-6 flex max-w-workspace flex-col overflow-hidden pb-4">
+        <div className="mb-4 md:mb-5 shrink-0 text-center">
+          <p className="eyebrow mb-1 leading-tight">Your everyday workspace</p>
+          <h1 className="mb-1 leading-tight">Your tasks</h1>
+          <p className="muted leading-snug">A clear plan for whatever comes next.</p>
         </div>
-
-        <form onSubmit={handleAddTodo} className="mb-8 flex space-x-4">
-          <input
-            type="text"
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
-            placeholder="Add a new task"
-            className="w-full p-4 border-2 border-gray-300 rounded-[4px] outline-none focus:border-blue-500 transition duration-300"
-          />
-          <button
-            type="submit"
-            className="w-[80px] bg-blue-500 text-white rounded-[4px] hover:bg-blue-600 outline-none flex items-center justify-center transition duration-200"
-          >
-            <IoAdd className="text-3xl" /> {/* Enlarged icon */}
-          </button>
-        </form>
-
-        <ul
-          ref={listRef}
-          className="space-y-3 overflow-auto max-h-96"
-          style={{
-            paddingRight: "10px",
-            scrollbarWidth: "thin",
-            scrollbarColor: "#A0AEC0 #F7FAFC",
-          }}
+        <section
+          className="rounded-md border border-line bg-surface shadow-sm flex min-h-0 flex-1 flex-col overflow-hidden"
+          aria-label="Task manager"
         >
-          {todos.map((todo) => (
-            <li
-              key={todo._id}
-              className="flex items-center justify-between p-4 bg-white rounded-[4px] border-2 border-gray-300 hover:bg-gray-100 transition duration-300 cursor-pointer"
+          <form
+            onSubmit={handleAddTodo}
+            className="shrink-0 border-b border-line bg-slate-50/50 p-4 md:p-6"
+          >
+            <label
+              className="mb-2 block text-control font-semibold text-muted"
+              htmlFor="new-task"
             >
-              <div className="flex items-center space-x-4 flex-1">
-                {todo.completed ? (
-                  <FaCheckCircle
-                    onClick={() =>
-                      handleToggleComplete(todo._id, todo.completed)
-                    }
-                    className="cursor-pointer text-green-500 hover:text-green-600 transition duration-200"
-                  />
-                ) : (
-                  <FaRegCircle
-                    onClick={() =>
-                      handleToggleComplete(todo._id, todo.completed)
-                    }
-                    className="cursor-pointer text-gray-400 hover:text-gray-700 transition duration-200"
-                  />
-                )}
-
-                {editingTask === todo._id ? (
-                  <div className="flex flex-col w-full space-y-2">
-                    <input
-                      type="text"
-                      value={task}
-                      onChange={(e) => setTask(e.target.value)}
-                      className="px-2 py-1 border-2 border-gray-300 rounded-[4px] outline-none focus:border-blue-500 transition duration-300"
-                    />
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <button
-                        onClick={() => handleEditTodo(todo._id, task)}
-                        className="px-4 py-2 text-blue-500 bg-blue-100 hover:bg-blue-200 rounded-md transition duration-200"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={handleCancelEdit} // Reset task state and exit editing
-                        className="px-4 py-2 text-red-500 bg-red-100 hover:bg-red-200 rounded-md transition duration-200"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <span
-                    style={{
-                      textDecoration: todo.completed ? "line-through" : "none",
-                    }}
-                    className="text-gray-700 text-lg font-medium"
-                  >
-                    {todo.task}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center space-x-3">
-                {!editingTask && (
-                  <FaEdit
-                    onClick={() => {
-                      setEditingTask(todo._id);
-                      setTask(todo.task);
-                    }}
-                    className="cursor-pointer text-blue-500 hover:text-blue-600 transition duration-200"
-                  />
-                )}
-
-                <FaTrash
-                  onClick={() => handleDeleteTodo(todo._id)}
-                  className="cursor-pointer text-red-500 hover:text-red-600 transition duration-200"
+              What would you like to get done?
+            </label>
+            <div className="flex items-stretch gap-2 sm:gap-3">
+              <div className="min-w-0 flex-1">
+                <input
+                  className="input-field bg-surface"
+                  id="new-task"
+                  ref={inputRef}
+                  value={task}
+                  onChange={(event) => setTask(event.target.value)}
+                  placeholder="Write a task and press Enter"
+                  required
+                  maxLength={500}
+                  disabled={adding || loading || loadError}
                 />
               </div>
-            </li>
-          ))}
-        </ul>
-
-        {/* Move ToastContainer to top-right */}
+              <button
+                className="primary-button shrink-0 shadow-none"
+                disabled={adding || loading || loadError || !task.trim()}
+                aria-busy={adding}
+              >
+                {adding ? <LoadingStatus /> : "Add task"}
+              </button>
+            </div>
+          </form>
+          <div className="flex shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-4 md:px-6">
+            <h2 className="flex items-center gap-2 text-body">
+              My tasks{" "}
+              <span className="text-xs text-muted rounded bg-slate-100 px-2 py-0.5">
+                {todos.length}
+              </span>
+            </h2>
+            {!loading && !loadError && (
+              <p className="text-xs text-muted">
+                {completed} of {todos.length} completed
+              </p>
+            )}
+          </div>
+          {renderTaskList()}
+        </section>
         <ToastContainer
+          toastClassName="rounded-md"
           position="top-right"
           autoClose={2000}
-          hideProgressBar={true}
+          hideProgressBar
+          icon={({ type }) => (
+            <i
+              className={`bi bi-${type === "error" ? "exclamation-circle" : "check-circle"}`}
+              aria-hidden="true"
+            />
+          )}
+          closeButton={({ closeToast }) => (
+            <button
+              type="button"
+              onClick={closeToast}
+              aria-label="Dismiss notification"
+            >
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          )}
         />
-      </div>
+      </main>
     </div>
   );
-};
-
-export default TodoList;
+}
