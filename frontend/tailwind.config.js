@@ -21,7 +21,7 @@ export default {
       backgroundImage: {
         home: "linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.32)), url('/night-workspace.png')",
       },
-      fontFamily: { sans: ["DM Sans", "sans-serif"], display: ["Manrope", "sans-serif"] },
+      fontFamily: { sans: ["Inter", "sans-serif"] },
       keyframes: { "loading-spin": { to: { transform: "rotate(360deg)" } } },
       animation: { "loading-spin": "loading-spin .8s linear infinite" },
     },

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -20,8 +20,8 @@
     --control-x: .75rem;
     --control-y: .375rem;
   }
-  body { @apply font-sans text-body text-content; }
-  h1, h2, h3 { @apply font-display tracking-tight; }
+  body { @apply font-sans text-body text-content; --toastify-font-family: "Inter", sans-serif; }
+  h1, h2, h3 { @apply font-sans tracking-tight; }
   h1 { @apply text-heading font-extrabold; }
   h2 { @apply text-subheading font-bold; }
   button, input { @apply font-sans; }
@@ -47,6 +47,6 @@
   .secondary-button { @apply border border-line bg-surface text-muted hover:bg-blue-50; }
   .danger-button { @apply border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100; }
   .input-field {
-    @apply w-full min-w-0 rounded-control border border-line bg-slate-50 px-control-x py-control-y text-control font-normal leading-5 text-content outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100;
+    @apply w-full min-w-0 rounded-control border border-line bg-slate-50 px-control-x py-2 text-sm font-normal text-content outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100;
   }
 }

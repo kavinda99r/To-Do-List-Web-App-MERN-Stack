@@ -15,7 +15,7 @@ export default function Header() {
   return (
     <header className={headerClass}>
       <Link
-        className="inline-flex items-center gap-1 font-display tracking-tight text-2xl font-extrabold text-content"
+        className="inline-flex items-center gap-1 font-sans tracking-tight text-2xl font-extrabold text-content"
         to={signedIn ? "/todos" : "/"}
       >
         <img

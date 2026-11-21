@@ -105,7 +105,7 @@ export default function Profile() {
           to="/todos"
           className="mb-5 inline-flex items-center gap-2 text-control text-muted"
         >
-          <i className="bi bi-grid" aria-hidden="true" /> Back to tasks
+          <i className="bi bi-arrow-left" aria-hidden="true" /> Back to tasks
         </Link>
         <div className="mb-4 md:mb-7">
           <h1 className="mb-2">Account settings</h1>

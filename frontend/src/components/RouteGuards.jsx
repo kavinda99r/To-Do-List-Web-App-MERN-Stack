@@ -13,23 +13,34 @@ export function ProtectedRoute() {
   useEffect(() => {
     if (!token) return;
     let active = true;
+    let requestInProgress = false;
+    let sessionWasVerified = false;
     const controller = new AbortController();
     async function verify() {
+      if (requestInProgress) return;
+      requestInProgress = true;
       try {
         await api.get("/auth/me", {
           signal: controller.signal,
           timeout: 10000,
         });
-        if (active) setVerification({ token, pathname, allowed: true });
+        if (active) {
+          sessionWasVerified = true;
+          setVerification({ token, pathname, allowed: true });
+        }
       } catch (error) {
-        if (active && error.code !== "ERR_CANCELED") {
+        // A temporary connection failure must not reset an already verified page.
+        // Real 401 responses are handled by the API interceptor and sign the user out.
+        if (active && !sessionWasVerified && error.code !== "ERR_CANCELED") {
           setVerification({ token, pathname, allowed: false });
         }
+      } finally {
+        requestInProgress = false;
       }
     }
     verify();
+    // Revalidate silently so switching windows does not unmount forms or task edits.
     const recheck = () => {
-      setVerification(null);
       verify();
     };
     window.addEventListener("focus", recheck);

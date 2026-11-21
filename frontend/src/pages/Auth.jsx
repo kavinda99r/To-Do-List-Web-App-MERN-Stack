@@ -41,116 +41,125 @@ export default function Auth() {
     }
   }
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-50">
       <Header />
-      <main className="flex flex-col items-center px-5 pb-12 pt-7 md:px-6">
-        <div className="mb-4 md:mb-7 text-center">
-          <p className="eyebrow mb-2">Your day, with a little more clarity</p>
-          <h1>
-            {signup ? "Make space for progress." : "Good to have you here."}
-          </h1>
-        </div>
+      <main className="flex min-h-0 flex-1 items-start justify-center overflow-hidden px-5 pt-6 pb-4 sm:pt-10 lg:pt-12 md:px-6">
         <section
-          className="rounded-md border border-line bg-surface shadow-sm p-5 md:p-7 w-full max-w-auth"
+          className="flex max-h-full min-h-0 w-full max-w-auth flex-col overflow-hidden rounded-md border border-line bg-surface shadow-sm"
           aria-labelledby="auth-title"
         >
-          <h2 className="mb-2" id="auth-title">
-            {signup ? "A little more organized." : "Welcome back."}
-          </h2>
-          <p className="muted">
-            {signup
-              ? "Create your account and make room for what matters."
-              : "Your tasks, your pace. Pick up where you left off."}
-          </p>
-          {params.has("expired") && (
-            <p role="status" className="notice">
-              Your session expired. Please log in again.
+          <div className="min-h-0 shrink-0 p-4 sm:p-5 md:p-6">
+            <h1
+              className="text-center text-2xl leading-tight md:text-3xl mb-2"
+              id="auth-title"
+            >
+              {signup ? "SIGN UP" : "LOGIN"}
+            </h1>
+            <p className="muted text-center leading-snug mb-6 max-w-[250px] mx-auto">
+              {signup
+                ? "Create your account and make room for what matters."
+                : "Your tasks, your pace. Pick up where you left off."}
             </p>
-          )}
-          {params.has("deleted") && (
-            <p role="status" className="notice">
-              Your account and tasks have been deleted.
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="form-error">
-              {error}
-            </p>
-          )}
-          <form
-            onSubmit={submit}
-            key={mode}
-            className="mt-4 flex flex-col gap-3"
-          >
-            {signup && (
+            {params.has("expired") && (
+              <p role="status" className="notice">
+                Your session expired. Please log in again.
+              </p>
+            )}
+            {params.has("deleted") && (
+              <p role="status" className="notice">
+                Your account and tasks have been deleted.
+              </p>
+            )}
+            {error && (
+              <p role="alert" className="form-error">
+                {error}
+              </p>
+            )}
+            <form
+              onSubmit={submit}
+              key={mode}
+              className="mt-4 flex flex-col gap-3"
+            >
+              {signup && (
+                <label className="flex flex-col gap-1.5 text-control font-semibold text-content">
+                  Your name
+                  <input
+                    className="input-field"
+                    name="username"
+                    autoComplete="name"
+                    placeholder="Alex Morgan"
+                    required
+                    maxLength={80}
+                  />
+                </label>
+              )}
               <label className="flex flex-col gap-1.5 text-control font-semibold text-content">
-                Your name
+                Email address
                 <input
                   className="input-field"
-                  name="username"
-                  autoComplete="name"
-                  placeholder="Alex Morgan"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
                   required
-                  maxLength={80}
                 />
               </label>
-            )}
-            <label className="flex flex-col gap-1.5 text-control font-semibold text-content">
-              Email address
-              <input
-                className="input-field"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                required
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-control font-semibold text-content">
-              Password
-              <span className="relative">
-                <input
-                  className="input-field pr-11"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={signup ? "new-password" : "current-password"}
-                  placeholder={
-                    signup ? "Create a password" : "Enter your password"
-                  }
-                  required
-                  minLength={signup ? 8 : undefined}
-                />
-                <button
-                  type="button"
-                  className="absolute bottom-1 right-1 top-1 w-8 rounded-control text-muted"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <i
-                    className={`bi bi-${showPassword ? "eye-slash" : "eye"}`}
-                    aria-hidden="true"
+              <label className="flex flex-col gap-1.5 text-control font-semibold text-content">
+                Password
+                <span className="relative">
+                  <input
+                    className="input-field pr-11"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete={signup ? "new-password" : "current-password"}
+                    placeholder={
+                      signup ? "Create a password" : "Enter your password"
+                    }
+                    required
+                    minLength={signup ? 8 : undefined}
                   />
-                </button>
-              </span>
-            </label>
-            {signup && <p className="field-hint">Use at least 8 characters.</p>}
-            <button className="primary-button" disabled={busy} aria-busy={busy}>
-              {busy ? <LoadingStatus /> : signup ? "Create account" : "Log in"}
-            </button>
-          </form>
-          <p className="text-control leading-7 mt-5 text-center">
-            {signup ? "Already have an account? " : "New to TaskMate? "}
-            <Link
-              className="font-semibold text-primary"
-              to={signup ? "/login" : "/signup"}
-            >
-              {signup ? "Log in" : "Create an account"}
-            </Link>
-          </p>
-          <p className="text-xs mt-6 border-t border-line pt-6 text-center">
-            <i className="bi bi-lock" aria-hidden="true" /> A private space for
-            your everyday plans.
-          </p>
+                  <button
+                    type="button"
+                    className="absolute bottom-1 right-1 top-1 w-8 rounded-control text-muted"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <i
+                      className={`bi bi-${showPassword ? "eye-slash" : "eye"}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                </span>
+              </label>
+              {signup && (
+                <p className="field-hint">Use at least 8 characters.</p>
+              )}
+              <button
+                className="primary-button py-2 text-base mt-4"
+                disabled={busy}
+                aria-busy={busy}
+              >
+                {busy ? (
+                  <LoadingStatus />
+                ) : signup ? (
+                  "Create account"
+                ) : (
+                  "Log in"
+                )}
+              </button>
+            </form>
+            <p className="text-control leading-7 mt-5 text-center">
+              {signup ? "Already have an account? " : "New to TaskMate? "}
+              <Link
+                className="font-semibold text-primary"
+                to={signup ? "/login" : "/signup"}
+              >
+                {signup ? "Log in" : "Create an account"}
+              </Link>
+            </p>
+          </div>
         </section>
       </main>
     </div>

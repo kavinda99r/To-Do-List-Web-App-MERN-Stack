@@ -299,11 +299,6 @@ export default function TodoList() {
     <div className="bg-slate-50 flex h-dvh min-h-0 flex-col overflow-hidden">
       <Header />
       <main className="mx-auto w-full min-h-0 flex-1 px-5 pt-3 md:px-6 md:pt-6 flex max-w-workspace flex-col overflow-hidden pb-4">
-        <div className="mb-4 md:mb-5 shrink-0 text-center">
-          <p className="eyebrow mb-1 leading-tight">Your everyday workspace</p>
-          <h1 className="mb-1 leading-tight">Your tasks</h1>
-          <p className="muted leading-snug">A clear plan for whatever comes next.</p>
-        </div>
         <section
           className="rounded-md border border-line bg-surface shadow-sm flex min-h-0 flex-1 flex-col overflow-hidden"
           aria-label="Task manager"

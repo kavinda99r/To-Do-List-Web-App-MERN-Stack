@@ -39,8 +39,8 @@ export default function Home() {
               your focus, and enjoy getting things done.
             </p>
             <div className="mt-5 flex justify-center">
-              <Link to={destination} className="primary-button">
-                Get started
+              <Link to={destination} className="primary-button px-10 py-3 text-lg font-medium my-4">
+                Get Started
               </Link>
             </div>
             <p className="mt-3 text-control text-muted">
